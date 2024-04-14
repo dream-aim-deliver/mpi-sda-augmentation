@@ -14,6 +14,10 @@ def main(
     tracer_id: str,
     #TODO: enter  args
     work_dir: str,
+    kp_auth_token: str,
+    kp_host: str,
+    kp_port: int,
+    kp_scheme: str,
     log_level: str = "WARNING",
     
 ) -> None:
@@ -30,6 +34,10 @@ def main(
     kernel_planckster, protocol, file_repository = setup(
         job_id=job_id,
         logger=logger,
+        kp_auth_token=kp_auth_token,
+        kp_host=kp_host,
+        kp_port=kp_port,
+        kp_scheme=kp_scheme,
     )
 
     scraped_data_repository = ScrapedDataRepository(
@@ -45,8 +53,9 @@ def main(
         tracer_id=tracer_id,
         scraped_data_repository=scraped_data_repository,
         log_level=log_level,
-        work_dir = work_dir
-        #TODO: pt the args here too
+        work_dir = work_dir,
+       
+
     )
 
 
@@ -87,9 +96,33 @@ if __name__ == "__main__":
         help="work dir",
     )
 
-    #TODO: put more args here
+    parser.add_argument(
+        "--kp-auth-token",
+        type=str,
+        default="",
+        help="The Kernel Planckster auth token",
+    )
 
+    parser.add_argument(
+        "--kp-host",
+        type=str,
+        default="localhost",
+        help="The Kernel Planckster host",
+    )
 
+    parser.add_argument(
+        "--kp-port",
+        type=int,
+        default=8000,
+        help="The Kernel Planckster port",
+    )
+
+    parser.add_argument(
+        "--kp-scheme",
+        type=str,
+        default="http",
+        help="The Kernel Planckster scheme",
+    )
  
    
 
@@ -101,6 +134,10 @@ if __name__ == "__main__":
         tracer_id=args.tracer_id,
         log_level=args.log_level,
         work_dir = args.work_dir,
+        kp_auth_token=args.kp_auth_token,
+        kp_host=args.kp_host,
+        kp_port=args.kp_port,
+        kp_scheme=args.kp_scheme,
         #TODO: put args from parser here
     )
 

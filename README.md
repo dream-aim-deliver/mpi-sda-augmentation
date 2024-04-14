@@ -10,7 +10,7 @@ cp .env.template .env
 
 ### Run the container
 ```bash
-./python augmentation_main.py
+python augment_main.py
 ```
 
 ## Development
@@ -18,5 +18,5 @@ cp .env.template .env
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-python augmentation_main.py
+python augment_main.py
 ```

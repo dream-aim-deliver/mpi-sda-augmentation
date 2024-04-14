@@ -148,12 +148,12 @@ def augment_by_date(work_dir: str, job_id:int,  scraped_data_repository: Scraped
             tweet_latitude = row['Resolved_Latitude']
             tweet_longitude = row['Resolved_Longitude']
             tweet_month = row['Month']
-            tweet_day = str(row['Day'])
-            tweet_year = str(row['Year'])
+            tweet_day = row['Day']
+            tweet_year = row['Year']
             tweet_disaster_type = row['Disaster_Type']
 
             
-            if(sat_image_year == tweet_year and sat_image_month == tweet_month and sat_image_day == tweet_day):
+            if(int(sat_image_year) == int(tweet_year) and sat_image_month == tweet_month and int(sat_image_day) == int(tweet_day)):
                 matches_found_twitter += 1
                 
                 data.append([f"tweet about {tweet_disaster_type}", tweet_latitude, tweet_longitude, tweet_title, tweet_tweet, tweet_location ])
@@ -166,14 +166,14 @@ def augment_by_date(work_dir: str, job_id:int,  scraped_data_repository: Scraped
             telegram_latitude = row['Resolved_Latitude']
             telegram_longitude = row['Resolved_Longitude']
             telegram_month = row['Month']
-            telegram_day = str(row['Day'])
-            telegram_year = str(row['Year'])
+            telegram_day = row['Day']
+            telegram_year = row['Year']
             telegram_disaster_type = row['Disaster_Type']
 
-            
-            if(sat_image_year == telegram_year and sat_image_month == telegram_month and sat_image_day == telegram_day):
+           
+            if(int(sat_image_year) == int(telegram_year) and sat_image_month == telegram_month and int(sat_image_day) == int(telegram_day)):
                 matches_found_telegram += 1
-              
+                
                 data.append([f"telegram post about {telegram_disaster_type}", telegram_latitude, telegram_longitude, telegram_title, telegram_tweet, telegram_location ])
         
         date_df = pd.DataFrame(data, columns=["Status", "Lattitude", "Longitude", "Title", "Text", "Location"])

@@ -1,0 +1,1 @@
+python augment_main.py --kp-auth-token test123 --kp-host localhost --kp-port 8000 --kp-scheme http

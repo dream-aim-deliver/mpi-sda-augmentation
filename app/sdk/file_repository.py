@@ -59,19 +59,7 @@ class FileRepository:
         return pfn
 
         
-    def public_upload(self, signed_url: str, file_path: str) -> None:
-        """
-        Upload a file to a signed url.
 
-        :param signed_url: The signed url to upload to.
-        :param file_path: The path to the file to upload.
-        """
-
-        with open(file_path, "rb") as f:
-            upload_res = requests.put(signed_url, data=f)
-
-        if upload_res.status_code != 200:
-            raise ValueError(f"Failed to upload file to signed url: {upload_res.text}")
 
     def public_upload(self, signed_url: str, file_path: str) -> None:
         """
@@ -82,7 +70,7 @@ class FileRepository:
         """
 
         with open(file_path, "rb") as f:
-            upload_res = requests.put(signed_url, data=f)
+            upload_res = requests.put(signed_url, data=f,verify=False)
 
         if upload_res.status_code != 200:
             raise ValueError(f"Failed to upload file to signed url: {upload_res.text}")
@@ -98,7 +86,7 @@ class FileRepository:
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             print(os.path.dirname(file_path))
             with open(file_path, "wb") as f:
-                download_res = requests.get(signed_url)
+                download_res = requests.get(signed_url, verify=False)
                 f.write(download_res.content)
 
             if download_res.status_code != 200:

@@ -55,8 +55,8 @@ def augment(
         
         #do matching/ augmentation
     
-        if minimum_info["sentinel"] == True and minimum_info["twitter"] == True and minimum_info["telegram"] == True:
-            augment_by_date(work_dir, job_id, scraped_data_repository, protocol)
+        if minimum_info["sentinel"] == True and minimum_info["twitter"] == True or minimum_info["sentinel"] == True and minimum_info["telegram"] == True:
+            augment_by_date(work_dir, job_id, scraped_data_repository, protocol, minimum_info)
         else:
             logger.warn("Could not run augmentation, try again after running data pipeline for sentinel, twitter, and telegram")
 
@@ -92,13 +92,14 @@ def download_source_if_relevant(source: KernelPlancksterSourceData, job_id:int, 
         scraped_data_repository.download_json(source_data, job_id, sentinel_coords_path)
         res["sentinel"] = True
 
-    elif "twitter" in source_data.relative_path and os.path.basename(source_data.relative_path) == "data.json":
+    #TODO: replace with regex
+    elif "twitter" in source_data.relative_path and "data" in os.path.basename(source_data.relative_path):
         
         twitter_coords_path = os.path.join(work_dir, "twitter_augment", file_name)
         scraped_data_repository.download_json(source_data, job_id, twitter_coords_path)
         res["twitter"] = True
 
-    elif "telegram" in source_data.relative_path and os.path.basename(source_data.relative_path) == "data.json":
+    elif "telegram" in source_data.relative_path and "data" in os.path.basename(source_data.relative_path):
         telegram_coords_path = os.path.join(work_dir, "telegram_augment", file_name)
         scraped_data_repository.download_json(source_data, job_id, telegram_coords_path)
         res["telegram"] = True
@@ -106,7 +107,7 @@ def download_source_if_relevant(source: KernelPlancksterSourceData, job_id:int, 
     return res
 
 #TODO: plan system that uses generic sattelitedata() and socialfeeddata() classes
-def augment_by_date(work_dir: str, job_id:int,  scraped_data_repository: ScrapedDataRepository, protocol: ProtocolEnum ):
+def augment_by_date(work_dir: str, job_id:int,  scraped_data_repository: ScrapedDataRepository, protocol: ProtocolEnum, minimum_info: dict ):
     key = {
     "01": "January",
     "02": "February",
@@ -121,9 +122,13 @@ def augment_by_date(work_dir: str, job_id:int,  scraped_data_repository: Scraped
     "11": "November",
     "12": "December"
     }
-
-    twitter_df = pd.read_json(f'{work_dir}/twitter_augment/data.json', orient="index")
-    telegram_df = pd.read_json(f'{work_dir}/telegram_augment/data.json', orient="index")
+    twitter_df=pd.DataFrame()
+    telegram_df=pd.DataFrame()
+    if minimum_info["twitter"]:
+        latest_twitter_data = sorted([f for f in os.listdir(f'{work_dir}/twitter_augment')], key=lambda x: x[5:20], reverse=True)[0]
+        twitter_df = pd.read_json(f'{work_dir}/twitter_augment/{latest_twitter_data}', orient="index")
+    if minimum_info["telegram"]:
+        telegram_df = pd.read_json(f'{work_dir}/telegram_augment/data.json', orient="index")
     sentinel_dir = os.path.join(work_dir, "wildfire_coords")
     
     for wildifre_coords_json_file_path in os.listdir(sentinel_dir):
@@ -136,10 +141,10 @@ def augment_by_date(work_dir: str, job_id:int,  scraped_data_repository: Scraped
                                                        #title tweet location
             data.append([status, lattitude, longitude, "n/a", "n/a", "n/a" ])
 
-        underscore_date=wildifre_coords_json_file_path[:wildifre_coords_json_file_path.index("__")]
+        underscore_date=wildifre_coords_json_file_path[2:wildifre_coords_json_file_path.index("____")]
         split_date = underscore_date.split("_")
         sat_image_year = split_date[0]; sat_image_month = key[split_date[1]]; sat_image_day = split_date[2]
-
+    
         matches_found_twitter = 0
         for index, row in twitter_df.iloc[0:].iterrows():
             tweet_title = row['Title']
@@ -170,12 +175,11 @@ def augment_by_date(work_dir: str, job_id:int,  scraped_data_repository: Scraped
             telegram_year = row['Year']
             telegram_disaster_type = row['Disaster_Type']
 
-           
+        
             if(int(sat_image_year) == int(telegram_year) and sat_image_month == telegram_month and int(sat_image_day) == int(telegram_day)):
                 matches_found_telegram += 1
-                
                 data.append([f"telegram post about {telegram_disaster_type}", telegram_latitude, telegram_longitude, telegram_title, telegram_tweet, telegram_location ])
-        
+
         date_df = pd.DataFrame(data, columns=["Status", "Lattitude", "Longitude", "Title", "Text", "Location"])
         os.makedirs(f"{work_dir}/by_date", exist_ok=True)
         if matches_found_twitter >= 1 or matches_found_telegram >= 1:

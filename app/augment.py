@@ -183,14 +183,15 @@ def augment_by_date(work_dir: str, job_id:int,  scraped_data_repository: Scraped
         date_df = pd.DataFrame(data, columns=["Status", "Lattitude", "Longitude", "Title", "Text", "Location"])
         os.makedirs(f"{work_dir}/by_date", exist_ok=True)
         if matches_found_twitter >= 1 or matches_found_telegram >= 1:
-            local_json_path = f"{work_dir}/by_date/{sat_image_year}_{sat_image_month}_{sat_image_day}.json"
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            local_json_path = f"{work_dir}/by_date/{sat_image_year}_{sat_image_month}_{sat_image_day}_{timestamp}.json"
             date_df.to_json(local_json_path, orient='index', indent=4)
             
             #upload to minio
             source_data = KernelPlancksterSourceData(
-            name=f"{sat_image_year}_{sat_image_month}_{sat_image_day}",
+            name=f"{sat_image_year}_{sat_image_month}_{sat_image_day}_{timestamp}",
             protocol=protocol,
-            relative_path=f"augmented/by_date/{sat_image_year}_{sat_image_month}_{sat_image_day}.json"
+            relative_path=f"augmented/by_date/{sat_image_year}_{sat_image_month}_{sat_image_day}_{timestamp}.json"
             )
 
             try:

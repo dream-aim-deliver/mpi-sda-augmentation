@@ -56,7 +56,7 @@ def augment(
         #do matching/ augmentation
     
         if minimum_info["sentinel"] == True and minimum_info["twitter"] == True or minimum_info["sentinel"] == True and minimum_info["telegram"] == True:
-            augment_by_date(work_dir, job_id, scraped_data_repository, protocol, minimum_info)
+            augment_by_date(work_dir, job_id, tracer_id, scraped_data_repository, protocol, minimum_info)
         else:
             logger.warn("Could not run augmentation, try again after running data pipeline for sentinel, twitter, and telegram")
 
@@ -85,21 +85,21 @@ def download_source_if_relevant(source: KernelPlancksterSourceData, job_id:int, 
     )
 
     file_name = os.path.basename(relative_path)         
-
+    
     res = {"sentinel": False, "twitter": False, "telegram": False}
-    if "sentinel" in source_data.relative_path and os.path.splitext(source_data.relative_path)[1] ==".json":
+    if os.path.split(source_data.relative_path)[0] == f"sentinel/{tracer_id}/{job_id}/augmented":
         sentinel_coords_path = os.path.join(work_dir, "wildfire_coords", file_name)
         scraped_data_repository.download_json(source_data, job_id, sentinel_coords_path)
         res["sentinel"] = True
 
     #TODO: replace with regex
-    elif "twitter" in source_data.relative_path and "data" in os.path.basename(source_data.relative_path):
+    elif os.path.split(source_data.relative_path)[0] == f"twitter/{tracer_id}/{job_id}/augmented":
         
         twitter_coords_path = os.path.join(work_dir, "twitter_augment", file_name)
         scraped_data_repository.download_json(source_data, job_id, twitter_coords_path)
         res["twitter"] = True
 
-    elif "telegram" in source_data.relative_path and "data" in os.path.basename(source_data.relative_path):
+    elif os.path.split(source_data.relative_path)[0] == f"telegram/{tracer_id}/{job_id}/augmented":
         telegram_coords_path = os.path.join(work_dir, "telegram_augment", file_name)
         scraped_data_repository.download_json(source_data, job_id, telegram_coords_path)
         res["telegram"] = True
@@ -107,7 +107,7 @@ def download_source_if_relevant(source: KernelPlancksterSourceData, job_id:int, 
     return res
 
 #TODO: plan system that uses generic sattelitedata() and socialfeeddata() classes
-def augment_by_date(work_dir: str, job_id:int,  scraped_data_repository: ScrapedDataRepository, protocol: ProtocolEnum, minimum_info: dict ):
+def augment_by_date(work_dir: str, job_id:int, tracer_id:str, scraped_data_repository: ScrapedDataRepository, protocol: ProtocolEnum, minimum_info: dict ):
     key = {
     "01": "January",
     "02": "February",
@@ -191,7 +191,7 @@ def augment_by_date(work_dir: str, job_id:int,  scraped_data_repository: Scraped
             source_data = KernelPlancksterSourceData(
             name=f"{sat_image_year}_{sat_image_month}_{sat_image_day}_{timestamp}",
             protocol=protocol,
-            relative_path=f"augmented/by_date/{sat_image_year}_{sat_image_month}_{sat_image_day}_{timestamp}.json"
+            relative_path=f"augmented/{tracer_id}/{job_id}/by_date/{sat_image_year}_{sat_image_month}_{sat_image_day}_{timestamp}.json"
             )
 
             try:

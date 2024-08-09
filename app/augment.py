@@ -130,7 +130,7 @@ def augment_by_date(work_dir: str, job_id:int, tracer_id:str, scraped_data_repos
     if minimum_info["telegram"]:
         telegram_df = pd.read_json(f'{work_dir}/telegram_augment/data.json', orient="index")
     sentinel_dir = os.path.join(work_dir, "wildfire_coords")
-    
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
     for wildifre_coords_json_file_path in os.listdir(sentinel_dir):
         data = []
         sentinel_df= pd.read_json(os.path.join(sentinel_dir,wildifre_coords_json_file_path), orient="index")
@@ -183,7 +183,7 @@ def augment_by_date(work_dir: str, job_id:int, tracer_id:str, scraped_data_repos
         date_df = pd.DataFrame(data, columns=["Status", "Lattitude", "Longitude", "Title", "Text", "Location"])
         os.makedirs(f"{work_dir}/by_date", exist_ok=True)
         if matches_found_twitter >= 1 or matches_found_telegram >= 1:
-            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            
             local_json_path = f"{work_dir}/by_date/{sat_image_year}_{sat_image_month}_{sat_image_day}_{timestamp}.json"
             date_df.to_json(local_json_path, orient='index', indent=4)
             
@@ -191,7 +191,7 @@ def augment_by_date(work_dir: str, job_id:int, tracer_id:str, scraped_data_repos
             source_data = KernelPlancksterSourceData(
             name=f"{sat_image_year}_{sat_image_month}_{sat_image_day}_{timestamp}",
             protocol=protocol,
-            relative_path=f"augmented/{tracer_id}/{job_id}/by_date/{sat_image_year}_{sat_image_month}_{sat_image_day}_{timestamp}.json"
+            relative_path=f"augmented/{tracer_id}/{job_id}/by_date/{timestamp}/{sat_image_year}_{sat_image_month}_{sat_image_day}.json"
             )
 
             try:
